@@ -56,6 +56,7 @@ LibreOffice *lo_init( const char *install_path )
     pSym = (HookFunction *) dlsym( dlhandle, "liblibreoffice_hook" );
     if( !pSym ) {
         fprintf( stderr, "failed to find hook in library '%s'\n", imp_lib );
+        dlclose( dlhandle );
         free( imp_lib );
         return NULL;
     }
