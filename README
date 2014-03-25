@@ -1,0 +1,14 @@
+lloconv
+=======
+
+This is a document convertor using liblibreoffice for all the heavy lifting.
+
+You need LibreOffice 4.2 or later for this to work.
+
+To use it, just run it with the input and output filenames - the format to
+convert to is determined by the extension of the output filename.  E.g.:
+
+$ ./lloconv essay.odt essay.html
+
+You should be aware that liblibreoffice is currently somewhat experimental,
+and hence so is lloconv.  Don't be surprised by the occasional crash.
