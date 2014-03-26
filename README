@@ -10,5 +10,12 @@ convert to is determined by the extension of the output filename.  E.g.:
 
 $ ./lloconv essay.odt essay.html
 
+The code assumes your LibreOffice install is in /opt/libreoffice4.2/program
+(which is where the debs from LibreOffice install to).  You can override this
+by setting environmental variable LO_PATH, e.g.:
+
+$ LO_PATH=/usr/lib/libreoffice/program
+$ export LO_PATH
+
 You should be aware that liblibreoffice is currently somewhat experimental,
 and hence so is lloconv.  Don't be surprised by the occasional crash.
