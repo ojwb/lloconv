@@ -22,7 +22,7 @@ main(int argc, char **argv)
 {
     if (argc != 3) {
         cerr << "Usage: " << argv[0] << " INPUT_FILE OUTPUT_FILE" << endl;
-	exit(1);
+	_Exit(1);
     }
 
     const char * input = argv[1];
@@ -33,22 +33,24 @@ main(int argc, char **argv)
 	lo_path = p;
     }
     LibLibreOffice * llo = lo_cpp_init(lo_path);
-    if (!llo) {
+    if (!llo || !llo->initialize(lo_path)) {
         cerr << argv[0] << ": Failed to initialise liblibreoffice" << endl;
-	exit(1);
+	_Exit(1);
     }
 
     LODocument * lodoc = llo->documentLoad(input);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
         cerr << argv[0] << ": liblibreoffice failed to load document (" << errmsg << ")" << endl;
-	exit(1);
+	_Exit(1);
     }
 
     if (!lodoc->saveAs(output, NULL)) {
 	const char * errmsg = llo->getError();
-	delete lodoc;
         cerr << argv[0] << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
-	exit(1);
+	_Exit(1);
     }
+
+    // Avoid segfault from libreoffice by terminating swiftly.
+    _Exit(0);
 }
