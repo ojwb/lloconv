@@ -9,6 +9,7 @@
 
 #include <cerrno>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 
 #include "liblibreoffice.hxx"
@@ -19,7 +20,7 @@ static const char * lo_path = "/opt/libreoffice4.2/program";
 
 int
 main(int argc, char **argv)
-{
+try {
     if (argc != 3) {
         cerr << "Usage: " << argv[0] << " INPUT_FILE OUTPUT_FILE" << endl;
 	_Exit(1);
@@ -53,4 +54,7 @@ main(int argc, char **argv)
 
     // Avoid segfault from libreoffice by terminating swiftly.
     _Exit(0);
+} catch (const exception & e) {
+    cerr << argv[0] << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    _Exit(1);
 }
