@@ -16,7 +16,7 @@
 
 using namespace std;
 
-static const char * lo_path = "/opt/libreoffice4.2/program";
+#define LO_PATH "/opt/libreoffice4.2/program"
 
 int
 main(int argc, char **argv)
@@ -29,9 +29,9 @@ try {
     const char * input = argv[1];
     const char * output = argv[2];
 
-    const char * p = getenv("LO_PATH");
-    if (p) {
-	lo_path = p;
+    const char * lo_path = getenv("LO_PATH");
+    if (!lo_path) {
+	lo_path = LO_PATH;
     }
     LibLibreOffice * llo = lo_cpp_init(lo_path);
     if (!llo || !llo->initialize(lo_path)) {
