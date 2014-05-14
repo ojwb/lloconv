@@ -9,7 +9,9 @@
 
 #include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <exception>
+#include <fstream>
 #include <iostream>
 
 #include "liblibreoffice.hxx"
@@ -24,6 +26,23 @@ static void
 usage()
 {
     cerr << "Usage: " << program << " [-f FORMAT] INPUT_FILE OUTPUT_FILE" << endl;
+}
+
+static int
+get_product_major(const char * path)
+{
+    string versionrc = path;
+    versionrc += "/versionrc";
+    ifstream vrc(versionrc.c_str());
+    if (!vrc)
+	return -2;
+    string line;
+    while (getline(vrc, line)) {
+	if (strncmp(line.c_str(), "ProductMajor=", 13) == 0) {
+	    return atoi(line.c_str() + 13);
+	}
+    }
+    return -1;
 }
 
 int
@@ -59,6 +78,18 @@ try {
     if (!lo_path) {
 	lo_path = LO_PATH;
     }
+
+    int project_major = get_product_major(lo_path);
+    if (project_major < 0) {
+        cerr << program << ": LibreOffice install not found in '" << lo_path << "' - you can set LO_PATH in the environment" << endl;
+	_Exit(1);
+    }
+
+    if (project_major < 420) {
+        cerr << program << ": LibreOffice >= 4.2 required for liblibreoffice feature (found ProductMajor " << project_major << " is < 420)" << endl;
+	_Exit(1);
+    }
+
     LibLibreOffice * llo = lo_cpp_init(lo_path);
     if (!llo || !llo->initialize(lo_path)) {
         cerr << program << ": Failed to initialise liblibreoffice" << endl;
