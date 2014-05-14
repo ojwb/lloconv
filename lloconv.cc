@@ -78,7 +78,7 @@ try {
 	_Exit(1);
     }
 
-    // Avoid segfault from libreoffice by terminating swiftly.
+    // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(0);
 } catch (const exception & e) {
     cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
