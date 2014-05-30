@@ -56,17 +56,47 @@ try {
     }
 
     const char * format = NULL;
-    if (argv[1][0] == '-' && argv[1][1] == 'f') {
-	if (argv[1][2]) {
-	    format = argv[1] + 2;
-	    ++argv;
-	    --argc;
-	} else {
-	    format = argv[2];
-	    argv += 2;
-	    argc -= 2;
+    const char * options = NULL;
+    // FIXME: Use getopt() or something.
+    while (argv[1][0] == '-') {
+	switch (argv[1][1]) {
+	    case '-':
+		if (argv[1][2] == '\0') {
+		    // End of options.
+		    ++argv;
+		    --argc;
+		    goto last_option;
+		}
+		break;
+	    case 'f':
+		if (argv[1][2]) {
+		    format = argv[1] + 2;
+		    ++argv;
+		    --argc;
+		} else {
+		    format = argv[2];
+		    argv += 2;
+		    argc -= 2;
+		}
+		continue;
+	    case 'o':
+		if (argv[1][2]) {
+		    options = argv[1] + 2;
+		    ++argv;
+		    --argc;
+		} else {
+		    options = argv[2];
+		    argv += 2;
+		    argc -= 2;
+		}
+		continue;
 	}
+
+	cerr << "Option '" << argv[1] << "' unknown\n\n";
+	argc = 0;
+	break;
     }
+last_option:
 
     if (argc != 3) {
 	usage();
@@ -92,6 +122,11 @@ try {
 	_Exit(1);
     }
 
+    if (project_major < 430 && options) {
+        cerr << program << ": LibreOffice >= 4.3.0 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
+	_Exit(1);
+    }
+
     LibLibreOffice * llo = lo_cpp_init(lo_path);
     if (!llo || !llo->initialize(lo_path)) {
         cerr << program << ": Failed to initialise liblibreoffice" << endl;
@@ -105,7 +140,11 @@ try {
 	_Exit(1);
     }
 
-    if (!lodoc->saveAs(output, format)) {
+    // The code saveAsWithOptions() calls was added in LO 4.3.0, so only call
+    // that if we have options to pass.
+    if (options ?
+	!lodoc->saveAsWithOptions(output, format, options) :
+	!lodoc->saveAs(output, format)) {
 	const char * errmsg = llo->getError();
         cerr << program << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
 	_Exit(1);
