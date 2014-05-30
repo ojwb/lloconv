@@ -60,9 +60,11 @@ try {
 	if (argv[1][2]) {
 	    format = argv[1] + 2;
 	    ++argv;
+	    --argc;
 	} else {
 	    format = argv[2];
 	    argv += 2;
+	    argc -= 2;
 	}
     }
 
