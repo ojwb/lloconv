@@ -151,8 +151,13 @@ last_option:
 	!lodoc->saveAs(output, format)) {
 	const char * errmsg = llo->getError();
         cerr << program << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
+	delete lodoc;
+	delete llo;
 	_Exit(1);
     }
+
+    delete lodoc;
+    delete llo;
 
     // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(0);
