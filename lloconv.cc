@@ -14,11 +14,12 @@
 #include <fstream>
 #include <iostream>
 
-#include "liblibreoffice.hxx"
+#include "LibreOfficeKit.hxx"
 
 using namespace std;
+using namespace lok;
 
-#define LO_PATH "/opt/libreoffice4.2/program"
+#define LO_PATH "/opt/libreoffice4.3/program"
 
 static const char * program = "lloconv";
 
@@ -121,36 +122,27 @@ last_option:
 	_Exit(1);
     }
 
-    if (project_major < 420) {
-        cerr << program << ": LibreOffice >= 4.2 required for liblibreoffice feature (found ProductMajor " << project_major << " is < 420)" << endl;
+    if (project_major < 430) {
+        cerr << program << ": LibreOffice >= 4.3 required for LibreOfficeKit feature (found ProductMajor " << project_major << " is < 430)" << endl;
 	_Exit(1);
     }
 
-    if (project_major < 430 && options) {
-        cerr << program << ": LibreOffice >= 4.3.0 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
+    Office * llo = lok_cpp_init(lo_path);
+    if (!llo) {
+        cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
 	_Exit(1);
     }
 
-    LibLibreOffice * llo = lo_cpp_init(lo_path);
-    if (!llo || !llo->initialize(lo_path)) {
-        cerr << program << ": Failed to initialise liblibreoffice" << endl;
-	_Exit(1);
-    }
-
-    LODocument * lodoc = llo->documentLoad(input);
+    Document * lodoc = llo->documentLoad(input);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
-        cerr << program << ": liblibreoffice failed to load document (" << errmsg << ")" << endl;
+        cerr << program << ": LibreOfficeKit failed to load document (" << errmsg << ")" << endl;
 	_Exit(1);
     }
 
-    // The code saveAsWithOptions() calls was added in LO 4.3.0, so only call
-    // that if we have options to pass.
-    if (options ?
-	!lodoc->saveAsWithOptions(output, format, options) :
-	!lodoc->saveAs(output, format)) {
+    if (!lodoc->saveAs(output, format, options)) {
 	const char * errmsg = llo->getError();
-        cerr << program << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
+        cerr << program << ": LibreOfficeKit failed to export (" << errmsg << ")" << endl;
 	delete lodoc;
 	delete llo;
 	_Exit(1);
@@ -162,6 +154,6 @@ last_option:
     // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(0);
 } catch (const exception & e) {
-    cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    cerr << program << ": LibreOfficeKit threw exception (" << e.what() << ")" << endl;
     _Exit(1);
 }

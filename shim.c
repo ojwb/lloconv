@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <liblibreoffice.h>
+#include <LibreOfficeKit.h>
 
 #include <dlfcn.h>
 #ifdef AIX
@@ -26,9 +26,9 @@
 
 #define TARGET_LIB "lib" "sofficeapp" ".so"
 
-typedef LibreOffice *(HookFunction)(void);
+typedef LibreOfficeKit *(HookFunction)(const char*);
 
-LibreOffice *lo_init( const char *install_path )
+LibreOfficeKit *lok_init( const char *install_path )
 {
     char *imp_lib;
     void *dlhandle;
@@ -53,7 +53,7 @@ LibreOffice *lo_init( const char *install_path )
         return NULL;
     }
 
-    pSym = (HookFunction *) dlsym( dlhandle, "liblibreoffice_hook" );
+    pSym = (HookFunction *) dlsym( dlhandle, "libreofficekit_hook" );
     if( !pSym ) {
         fprintf( stderr, "failed to find hook in library '%s'\n", imp_lib );
         dlclose( dlhandle );
@@ -62,7 +62,7 @@ LibreOffice *lo_init( const char *install_path )
     }
 
     free( imp_lib );
-    return pSym();
+    return pSym( install_path );
 }
 
 #endif // not LINUX => port me !

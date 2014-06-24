@@ -1,7 +1,7 @@
 lloconv: lloconv.o shim.o
 	g++ -o lloconv lloconv.o shim.o -ldl
 
-lloconv.o: lloconv.cc liblibreoffice.h liblibreoffice.hxx
+lloconv.o: lloconv.cc LibreOfficeKit.h LibreOfficeKit.hxx
 	g++ -I. -c -W -Wall -O2 -g lloconv.cc -o lloconv.o
 
 shim.o: shim.c
