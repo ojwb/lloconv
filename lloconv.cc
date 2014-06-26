@@ -14,6 +14,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <sysexits.h>
+
+#include "liblibreoffice.hxx"
 #include "LibreOfficeKit.hxx"
 
 using namespace std;
@@ -50,9 +53,79 @@ get_product_major(const char * path)
     return -1;
 }
 
+// Support for LibreOfficeKit which is in LO >= 4.3.0.
+static int
+conv_lok(const char * program, const char * format, const char * lo_path,
+	 const char * input, const char * output, const char * options)
+try {
+    Office * llo = lok_cpp_init(lo_path);
+    if (!llo) {
+	cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
+	return EX_UNAVAILABLE;
+    }
+
+    Document * lodoc = llo->documentLoad(input);
+    if (!lodoc) {
+	const char * errmsg = llo->getError();
+	cerr << program << ": LibreOfficeKit failed to load document (" << errmsg << ")" << endl;
+	return 1;
+    }
+
+    if (!lodoc->saveAs(output, format, options)) {
+	const char * errmsg = llo->getError();
+	cerr << program << ": LibreOfficeKit failed to export (" << errmsg << ")" << endl;
+	delete lodoc;
+	delete llo;
+	return 1;
+    }
+
+    delete lodoc;
+    delete llo;
+
+    return 0;
+} catch (const exception & e) {
+    cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    return 1;
+}
+
+// Support for the old liblibreoffice code in LO 4.2.x.
+static int
+conv_llo(const char * program, const char * format, const char * lo_path,
+	 const char * input, const char * output)
+try {
+    LibLibreOffice * llo = lo_cpp_init(lo_path);
+    if (!llo || !llo->initialize(lo_path)) {
+	cerr << program << ": Failed to initialise liblibreoffice" << endl;
+	return EX_UNAVAILABLE;
+    }
+
+    LODocument * lodoc = llo->documentLoad(input);
+    if (!lodoc) {
+	const char * errmsg = llo->getError();
+	cerr << program << ": liblibreoffice failed to load document (" << errmsg << ")" << endl;
+	return 1;
+    }
+
+    if (!lodoc->saveAs(output, format)) {
+	const char * errmsg = llo->getError();
+	cerr << program << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
+	delete lodoc;
+	delete llo;
+	return 1;
+    }
+
+    delete lodoc;
+    delete llo;
+
+    return 0;
+} catch (const exception & e) {
+    cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    return 1;
+}
+
 int
 main(int argc, char **argv)
-try {
+{
     program = argv[0];
 
     if (argc < 3) {
@@ -116,44 +189,28 @@ last_option:
 	lo_path = LO_PATH;
     }
 
+    int rc;
     int project_major = get_product_major(lo_path);
-    if (project_major < 0) {
-        cerr << program << ": LibreOffice install not found in '" << lo_path << "' - you can set LO_PATH in the environment" << endl;
-	_Exit(1);
+    if (project_major >= 430) {
+	rc = conv_lok(program, format, lo_path, input, output, options);
+	if (rc == EX_UNAVAILABLE && project_major == 430 && !options) {
+	    // 4.3.0 beta1 had llo still, so for "4.3.0" fall back to trying that.
+	    rc = conv_llo(program, format, lo_path, input, output);
+	}
+    } else if (project_major >= 420) {
+	if (options) {
+	    cerr << program << ": LibreOffice >= 4.3.0 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
+	    _Exit(1);
+	}
+	rc = conv_llo(program, format, lo_path, input, output);
+    } else if (project_major < 0) {
+	cerr << program << ": LibreOffice install not found in '" << lo_path << "' - you can set LO_PATH in the environment" << endl;
+	rc = 1;
+    } else {
+	cerr << program << ": LibreOffice >= 4.2.0 required for liblibreoffice/LibreOfficeKit feature (found ProductMajor " << project_major << " is < 420)" << endl;
+	rc = 1;
     }
-
-    if (project_major < 430) {
-        cerr << program << ": LibreOffice >= 4.3 required for LibreOfficeKit feature (found ProductMajor " << project_major << " is < 430)" << endl;
-	_Exit(1);
-    }
-
-    Office * llo = lok_cpp_init(lo_path);
-    if (!llo) {
-        cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
-	_Exit(1);
-    }
-
-    Document * lodoc = llo->documentLoad(input);
-    if (!lodoc) {
-	const char * errmsg = llo->getError();
-        cerr << program << ": LibreOfficeKit failed to load document (" << errmsg << ")" << endl;
-	_Exit(1);
-    }
-
-    if (!lodoc->saveAs(output, format, options)) {
-	const char * errmsg = llo->getError();
-        cerr << program << ": LibreOfficeKit failed to export (" << errmsg << ")" << endl;
-	delete lodoc;
-	delete llo;
-	_Exit(1);
-    }
-
-    delete lodoc;
-    delete llo;
 
     // Avoid segfault from LibreOffice by terminating swiftly.
-    _Exit(0);
-} catch (const exception & e) {
-    cerr << program << ": LibreOfficeKit threw exception (" << e.what() << ")" << endl;
-    _Exit(1);
+    _Exit(rc);
 }
