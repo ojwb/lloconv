@@ -55,7 +55,7 @@ LibreOfficeKit *lok_init( const char *install_path )
 
     pSym = (HookFunction *) dlsym( dlhandle, "libreofficekit_hook" );
     if( !pSym ) {
-        fprintf( stderr, "failed to find hook in library '%s'\n", imp_lib );
+        fprintf( stderr, "failed to find libreofficekit_hook in library '%s'\n", imp_lib );
         dlclose( dlhandle );
         free( imp_lib );
         return NULL;
