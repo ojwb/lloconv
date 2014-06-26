@@ -1,4 +1,4 @@
-/* lloconv.cc - Convert a document using liblibreoffice
+/* lloconv.cc - Convert a document using liblibreoffice/LibreOfficeKit
  *
  * Copyright (C) 2014 Olly Betts
  *

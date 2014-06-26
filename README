@@ -1,21 +1,24 @@
 lloconv
 =======
 
-This is a document convertor using liblibreoffice for all the heavy lifting.
+This is a document convertor which uses LibreOfficeKit (formerly known as
+liblibreoffice) for all the heavy lifting.
 
-You need LibreOffice 4.2 or later for this to work.
+You need LibreOffice 4.2 or later for this to work.  LibreOffice 4.3 or
+later will work better in many cases (more formats are supported and you
+can specify options).
 
 To use it, just run it with the input and output filenames - the format to
 convert to is determined by the extension of the output filename.  E.g.:
 
 $ ./lloconv essay.odt essay.html
 
-The code assumes your LibreOffice install is in /opt/libreoffice4.2/program
+The code assumes your LibreOffice install is in /opt/libreoffice4.3/program
 (which is where the debs from LibreOffice install to).  You can override this
 by setting environmental variable LO_PATH, e.g.:
 
 $ LO_PATH=/usr/lib/libreoffice/program
 $ export LO_PATH
 
-You should be aware that liblibreoffice is currently somewhat experimental,
-and hence so is lloconv.  Don't be surprised by the occasional crash.
+You should be aware that LibreOfficeKit is quite a new feature - if you
+hit problems, please report them.
