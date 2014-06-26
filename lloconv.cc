@@ -131,7 +131,7 @@ main(int argc, char **argv)
 
     if (argc < 3) {
 	usage();
-	_Exit(1);
+	_Exit(EX_USAGE);
     }
 
     const char * format = NULL;
@@ -179,7 +179,7 @@ last_option:
 
     if (argc != 3) {
 	usage();
-	_Exit(1);
+	_Exit(EX_USAGE);
     }
 
     const char * input = argv[1];
