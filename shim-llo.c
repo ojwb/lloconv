@@ -24,7 +24,15 @@
 #  include <sys/ldr.h>
 #endif
 
-#define TARGET_LIB "lib" "sofficeapp" ".so"
+#define TARGET_LIB  "lib" "sofficeapp" ".so"
+
+// If LO is built with --enable-mergelibs then we want to look in this library
+// instead.  This is the case on Ubuntu.
+#define TARGET_LIB2 "lib" "libmergedlo" ".so"
+
+#define TARGET_LIB_MAX_LEN \
+    (sizeof(TARGET_LIB) > sizeof(TARGET_LIB2) ? \
+         sizeof(TARGET_LIB) : sizeof(TARGET_LIB2))
 
 typedef LibreOffice *(HookFunction)(void);
 
@@ -33,24 +41,33 @@ LibreOffice *lo_init( const char *install_path )
     char *imp_lib;
     void *dlhandle;
     HookFunction *pSym;
+    size_t len;
 
     if( !install_path )
         return NULL;
-    if( !( imp_lib = (char *) malloc( strlen (install_path) + sizeof( TARGET_LIB ) + 2 ) ) )
+    len = strlen( install_path );
+    imp_lib = (char *) malloc( len + TARGET_LIB_MAX_LEN + 2 );
+    if( imp_lib == NULL )
     {
         fprintf( stderr, "failed to open library : not enough memory\n");
         return NULL;
     }
 
     strcpy( imp_lib, install_path );
-    strcat( imp_lib, "/" );
-    strcat( imp_lib, TARGET_LIB );
+    imp_lib[len] = '/';
+    strcpy( imp_lib + len + 1, TARGET_LIB );
 
     if( !( dlhandle = dlopen( imp_lib, RTLD_LAZY ) ) )
     {
-        fprintf( stderr, "failed to open library '%s'\n", imp_lib );
-        free( imp_lib );
-        return NULL;
+        strcpy( imp_lib + len + 1, TARGET_LIB2 );
+        if( !( dlhandle = dlopen( imp_lib, RTLD_LAZY ) ) )
+        {
+            imp_lib[len + 1] = '\0';
+            fprintf( stderr, "failed to open library '%s"TARGET_LIB"' or "
+                             "'%s"TARGET_LIB2"'\n", imp_lib, imp_lib );
+            free( imp_lib );
+            return NULL;
+        }
     }
 
     pSym = (HookFunction *) dlsym( dlhandle, "liblibreoffice_hook" );
