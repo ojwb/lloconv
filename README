@@ -6,7 +6,7 @@ liblibreoffice) for all the heavy lifting.
 
 You need LibreOffice 4.2 or later for this to work.  LibreOffice 4.3 or
 later will work better in many cases (more formats are supported and you
-can specify options).
+can specify options - 4.3.0rc1 is required for option support).
 
 To use it, just run it with the input and output filenames - the format to
 convert to is determined by the extension of the output filename.  E.g.:

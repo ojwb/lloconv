@@ -30,7 +30,7 @@ static void
 usage()
 {
     cerr << "Usage: " << program << " [-f FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
-    cerr << "Specifying options requires LibreOffice >= 4.3.0\n\n";
+    cerr << "Specifying options requires LibreOffice >= 4.3.0rc1\n\n";
     cerr << "Known formats include:\n";
     cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
     cerr << "Known options include: SkipImages\n";
@@ -200,7 +200,7 @@ last_option:
 	}
     } else if (project_major >= 420) {
 	if (options) {
-	    cerr << program << ": LibreOffice >= 4.3.0 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
+	    cerr << program << ": LibreOffice >= 4.3.0rc1 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
 	    _Exit(1);
 	}
 	rc = conv_llo(program, format, lo_path, input, output);
