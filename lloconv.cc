@@ -33,11 +33,11 @@ static const char * program = "lloconv";
 static void
 usage()
 {
-    cerr << "Usage: " << program << " [-f FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
+    cerr << "Usage: " << program << " [-f OUTPUT_FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
     cerr << "Specifying options requires LibreOffice >= 4.3.0rc1\n\n";
-    cerr << "Known formats include:\n";
+    cerr << "Known values for OUTPUT_FORMAT include:\n";
     cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
-    cerr << "Known options include: SkipImages\n";
+    cerr << "Known OPTIONS include: SkipImages\n";
     cerr << flush;
 }
 
