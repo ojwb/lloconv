@@ -22,7 +22,11 @@
 using namespace std;
 using namespace lok;
 
-#define LO_PATH "/opt/libreoffice4.3/program"
+// Install location for Debian packages:
+#define LO_PATH "/usr/lib/libreoffice/program"
+
+// Install location LO 4.3 in .deb files from libreoffice.org:
+#define LO_PATH2 "/opt/libreoffice4.3/program"
 
 static const char * program = "lloconv";
 
@@ -185,13 +189,22 @@ last_option:
     const char * input = argv[1];
     const char * output = argv[2];
 
+    int project_major;
     const char * lo_path = getenv("LO_PATH");
     if (!lo_path) {
 	lo_path = LO_PATH;
+	project_major = get_product_major(lo_path);
+	if (project_major == -2) {
+	    project_major = get_product_major(LO_PATH2);
+	    if (project_major > 0) {
+		lo_path = LO_PATH2;
+	    }
+	}
+    } else {
+	project_major = get_product_major(lo_path);
     }
 
     int rc;
-    int project_major = get_product_major(lo_path);
     if (project_major >= 430) {
 	rc = conv_lok(program, format, lo_path, input, output, options);
 	if (rc == EX_UNAVAILABLE && project_major == 430 && !options) {
