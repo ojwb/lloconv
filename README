@@ -25,3 +25,6 @@ $ export LO_PATH
 
 You should be aware that LibreOfficeKit is quite a new feature - if you
 hit problems, please report them.
+
+If you're looked for a Python API to LibreOfficeKit, take a look at pylokit:
+https://github.com/xrmx/pylokit
