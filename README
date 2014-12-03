@@ -15,10 +15,11 @@ $ ./lloconv essay.odt essay.html
 
 The code checks for LibreOffice installed in /usr/lib/libreoffice/program
 (which is where the Debian packages install to) and if it's not there, tries
-/opt/libreoffice4.3/program (which is where the .debs from libreoffice.org
-install to).  You can override this by setting environmental variable LO_PATH,
-either to handle an install in another location, or to force a particular
-install to be used if you have more than one copy installed, e.g.:
+/opt/libreoffice4.4/program and /opt/libreoffice4.3/program (which is where the
+.debs from libreoffice.org install to).  You can override this by setting
+environmental variable LO_PATH, either to handle an install in another
+location, or to force a particular install to be used if you have more than one
+copy installed, e.g.:
 
 $ LO_PATH=/opt/libreoffice4.2/program
 $ export LO_PATH

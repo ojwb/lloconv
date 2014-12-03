@@ -11,6 +11,7 @@
 #define INCLUDED_DESKTOP_INC_LIBREOFFICEKIT_HXX
 
 #include "LibreOfficeKit.h"
+#include "liblibreoffice.hxx"
 
 /*
  * The reasons this C++ code is not as pretty as it could be are:
@@ -73,12 +74,26 @@ public:
     }
 };
 
-inline Office* lok_cpp_init(const char* pInstallPath)
+inline bool lok_cpp_init(const char* pInstallPath, LibLibreOffice** llo, Office** lok)
 {
-    LibreOfficeKit* pThis = lok_init(pInstallPath);
-    if (pThis == NULL || pThis->pClass->nSize == 0)
-        return NULL;
-    return new ::lok::Office(pThis);
+    LibreOffice* pThis_old;
+    LibreOfficeKit* pThis;
+    if (!lok_init(pInstallPath, &pThis_old, &pThis))
+	return false;
+
+    if (pThis == NULL) {
+	if (pThis_old == NULL || pThis_old->nSize == 0)
+	    return false;
+	*lok = NULL;
+	*llo = new LibLibreOffice(pThis_old);
+	return true;
+    }
+
+    if (pThis->pClass->nSize == 0)
+	return false;
+    llo = NULL;
+    *lok = new ::lok::Office(pThis);
+    return true;
 }
 
 }

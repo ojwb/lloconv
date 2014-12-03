@@ -12,6 +12,8 @@
 
 #include <stddef.h>
 
+#include "liblibreoffice.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -62,7 +64,7 @@ struct _LibreOfficeKitDocumentClass
                      const char *pFilterOptions);
 };
 
-LibreOfficeKit* lok_init (const char* pInstallPath);
+int lok_init (const char* pInstallPath, LibreOffice** llo, LibreOfficeKit** lok);
 
 #ifdef __cplusplus
 }

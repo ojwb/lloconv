@@ -14,6 +14,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <sysexits.h>
 
 #include "liblibreoffice.hxx"
@@ -23,10 +26,10 @@ using namespace std;
 using namespace lok;
 
 // Install location for Debian packages:
-#define LO_PATH "/usr/lib/libreoffice/program"
+#define LO_PATH_DEBIAN "/usr/lib/libreoffice/program"
 
-// Install location LO 4.3 in .deb files from libreoffice.org:
-#define LO_PATH2 "/opt/libreoffice4.3/program"
+// Install location for .deb files from libreoffice.org:
+#define LO_PATH_LIBREOFFICEORG(V) "/opt/libreoffice"#V"/program"
 
 static const char * program = "lloconv";
 
@@ -41,34 +44,11 @@ usage()
     cerr << flush;
 }
 
-static int
-get_product_major(const char * path)
-{
-    string versionrc = path;
-    versionrc += "/versionrc";
-    ifstream vrc(versionrc.c_str());
-    if (!vrc)
-	return -2;
-    string line;
-    while (getline(vrc, line)) {
-	if (strncmp(line.c_str(), "ProductMajor=", 13) == 0) {
-	    return atoi(line.c_str() + 13);
-	}
-    }
-    return -1;
-}
-
 // Support for LibreOfficeKit which is in LO >= 4.3.0.
 static int
-conv_lok(const char * program, const char * format, const char * lo_path,
+conv_lok(const char * program, const char * format, Office * llo,
 	 const char * input, const char * output, const char * options)
 try {
-    Office * llo = lok_cpp_init(lo_path);
-    if (!llo) {
-	cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
-	return EX_UNAVAILABLE;
-    }
-
     Document * lodoc = llo->documentLoad(input);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
@@ -89,17 +69,17 @@ try {
 
     return 0;
 } catch (const exception & e) {
-    cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    cerr << program << ": LibreOfficeKit threw exception (" << e.what() << ")" << endl;
     return 1;
 }
 
 // Support for the old liblibreoffice code in LO 4.2.x.
 static int
-conv_llo(const char * program, const char * format, const char * lo_path,
+conv_llo(const char * program, const char * format, LibLibreOffice * llo,
+	 const char * lo_path,
 	 const char * input, const char * output)
 try {
-    LibLibreOffice * llo = lo_cpp_init(lo_path);
-    if (!llo || !llo->initialize(lo_path)) {
+    if (!llo->initialize(lo_path)) {
 	cerr << program << ": Failed to initialise liblibreoffice" << endl;
 	return EX_UNAVAILABLE;
     }
@@ -125,6 +105,32 @@ try {
     return 0;
 } catch (const exception & e) {
     cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
+    return 1;
+}
+
+static int
+convert(const char * program, const char * format, const char * lo_path,
+	const char * input, const char * output, const char * options)
+try {
+    LibLibreOffice * llo_old;
+    Office * llo;
+    if (!lok_cpp_init(lo_path, &llo_old, &llo)) {
+	cerr << program << ": Failed to initialise LibreOfficeKit or LibLibreOffice" << endl;
+	return EX_UNAVAILABLE;
+    }
+
+    if (llo) {
+	return conv_lok(program, format, llo, input, output, options);
+    }
+
+    if (options) {
+	cerr << program << ": LibreOffice >= 4.3.0rc1 required for specifying options" << endl;
+	_Exit(1);
+    }
+
+    return conv_llo(program, format, llo_old, lo_path, input, output);
+} catch (const exception & e) {
+    cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
     return 1;
 }
 
@@ -189,41 +195,24 @@ last_option:
     const char * input = argv[1];
     const char * output = argv[2];
 
-    int project_major;
     const char * lo_path = getenv("LO_PATH");
     if (!lo_path) {
-	lo_path = LO_PATH;
-	project_major = get_product_major(lo_path);
-	if (project_major == -2) {
-	    project_major = get_product_major(LO_PATH2);
-	    if (project_major > 0) {
-		lo_path = LO_PATH2;
-	    }
-	}
-    } else {
-	project_major = get_product_major(lo_path);
-    }
+	struct stat sb;
+#define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
+	CHECK_DIR(LO_PATH_DEBIAN);
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.4));
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.3));
 
-    int rc;
-    if (project_major >= 430) {
-	rc = conv_lok(program, format, lo_path, input, output, options);
-	if (rc == EX_UNAVAILABLE && project_major == 430 && !options) {
-	    // 4.3.0 beta1 had llo still, so for "4.3.0" fall back to trying that.
-	    rc = conv_llo(program, format, lo_path, input, output);
-	}
-    } else if (project_major >= 420) {
-	if (options) {
-	    cerr << program << ": LibreOffice >= 4.3.0rc1 required for specifying options (found ProductMajor " << project_major << " is < 430)" << endl;
+	if (!lo_path) {
+	    cerr << program << ": LibreOffice install not found\n"
+		"Set LO_PATH in the environment to the 'program' directory - e.g.:\n"
+		"LO_PATH=/opt/libreoffice/program\n"
+		"export LO_PATH" << endl;
 	    _Exit(1);
 	}
-	rc = conv_llo(program, format, lo_path, input, output);
-    } else if (project_major < 0) {
-	cerr << program << ": LibreOffice install not found in '" << lo_path << "' - you can set LO_PATH in the environment" << endl;
-	rc = 1;
-    } else {
-	cerr << program << ": LibreOffice >= 4.2.0 required for liblibreoffice/LibreOfficeKit feature (found ProductMajor " << project_major << " is < 420)" << endl;
-	rc = 1;
     }
+
+    int rc = convert(program, format, lo_path, input, output, options);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(rc);

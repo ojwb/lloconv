@@ -34,9 +34,10 @@
     (sizeof(TARGET_LIB) > sizeof(TARGET_LIB2) ? \
          sizeof(TARGET_LIB) : sizeof(TARGET_LIB2))
 
+typedef LibreOffice *(HookFunction_old)(void);
 typedef LibreOfficeKit *(HookFunction)(const char*);
 
-LibreOfficeKit *lok_init( const char *install_path )
+int lok_init( const char *install_path, LibreOffice** llo, LibreOfficeKit** lok )
 {
     char *imp_lib;
     void *dlhandle;
@@ -44,13 +45,13 @@ LibreOfficeKit *lok_init( const char *install_path )
     size_t len;
 
     if( !install_path )
-        return NULL;
+        return 0;
     len = strlen( install_path );
     imp_lib = (char *) malloc( len + TARGET_LIB_MAX_LEN + 2 );
     if( imp_lib == NULL )
     {
         fprintf( stderr, "failed to open library : not enough memory\n");
-        return NULL;
+        return 0;
     }
 
     strcpy( imp_lib, install_path );
@@ -66,20 +67,30 @@ LibreOfficeKit *lok_init( const char *install_path )
             fprintf( stderr, "failed to open library '%s"TARGET_LIB"' or "
                              "'%s"TARGET_LIB2"'\n", imp_lib, imp_lib );
             free( imp_lib );
-            return NULL;
+            return 0;
         }
     }
 
     pSym = (HookFunction *) dlsym( dlhandle, "libreofficekit_hook" );
     if( !pSym ) {
-        fprintf( stderr, "failed to find libreofficekit_hook in library '%s'\n", imp_lib );
+        HookFunction_old *pSym_old;
+        pSym_old = (HookFunction_old *) dlsym( dlhandle, "liblibreoffice_hook" );
+        if( pSym_old ) {
+            free( imp_lib );
+            *llo = pSym_old();
+            *lok = NULL;
+            return 1;
+        }
+        fprintf( stderr, "failed to find libreofficekit_hook or liblibreoffice_hook in library '%s'\n", imp_lib );
         dlclose( dlhandle );
         free( imp_lib );
-        return NULL;
+        return 0;
     }
 
     free( imp_lib );
-    return pSym( install_path );
+    *llo = NULL;
+    *lok = pSym( install_path );
+    return 1;
 }
 
 #endif // not LINUX => port me !
