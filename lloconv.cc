@@ -43,7 +43,7 @@ usage()
 
 // Support for LibreOfficeKit which is in LO >= 4.3.0.
 static int
-conv_lok(const char * program, const char * format, Office * llo,
+conv_lok(const char * format, Office * llo,
 	 const char * input, const char * output, const char * options)
 try {
     Document * lodoc = llo->documentLoad(input);
@@ -72,8 +72,7 @@ try {
 
 // Support for the old liblibreoffice code in LO 4.2.x.
 static int
-conv_llo(const char * program, const char * format, LibLibreOffice * llo,
-	 const char * lo_path,
+conv_llo(const char * format, LibLibreOffice * llo, const char * lo_path,
 	 const char * input, const char * output)
 try {
     if (!llo->initialize(lo_path)) {
@@ -106,7 +105,7 @@ try {
 }
 
 static int
-convert(const char * program, const char * format, const char * lo_path,
+convert(const char * format, const char * lo_path,
 	const char * input, const char * output, const char * options)
 try {
     LibLibreOffice * llo_old;
@@ -117,7 +116,7 @@ try {
     }
 
     if (llo) {
-	return conv_lok(program, format, llo, input, output, options);
+	return conv_lok(format, llo, input, output, options);
     }
 
     if (options) {
@@ -125,7 +124,7 @@ try {
 	_Exit(1);
     }
 
-    return conv_llo(program, format, llo_old, lo_path, input, output);
+    return conv_llo(format, llo_old, lo_path, input, output);
 } catch (const exception & e) {
     cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
     return 1;
@@ -209,7 +208,7 @@ last_option:
 	}
     }
 
-    int rc = convert(program, format, lo_path, input, output, options);
+    int rc = convert(format, lo_path, input, output, options);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(rc);
