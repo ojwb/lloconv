@@ -59,9 +59,14 @@ public:
         mpThis->pClass->destroy(mpThis);
     }
 
-    inline Document* documentLoad(const char* pUrl)
+    inline Document* documentLoad(const char* pUrl, const char* pOptions)
     {
-        LibreOfficeKitDocument* pDoc = mpThis->pClass->documentLoad(mpThis, pUrl);
+        LibreOfficeKitDocument* pDoc;
+        if (LIBREOFFICEKIT_HAS(mpThis, documentLoadWithOptions))
+            pDoc = mpThis->pClass->documentLoadWithOptions(mpThis, pUrl, pOptions);
+        else
+            pDoc = mpThis->pClass->documentLoad(mpThis, pUrl);
+
         if (pDoc == NULL)
             return NULL;
         return new Document(pDoc);

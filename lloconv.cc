@@ -46,7 +46,7 @@ static int
 conv_lok(const char * format, Office * llo,
 	 const char * input, const char * output, const char * options)
 try {
-    Document * lodoc = llo->documentLoad(input);
+    Document * lodoc = llo->documentLoad(input, options);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
 	cerr << program << ": LibreOfficeKit failed to load document (" << errmsg << ")" << endl;
