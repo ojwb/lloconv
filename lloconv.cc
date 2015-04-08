@@ -198,6 +198,7 @@ last_option:
 	CHECK_DIR(LO_PATH_DEBIAN);
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.4));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.3));
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.0));
 
 	if (!lo_path) {
 	    cerr << program << ": LibreOffice install not found\n"
