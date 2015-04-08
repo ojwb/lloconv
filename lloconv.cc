@@ -1,6 +1,6 @@
 /* lloconv.cc - Convert a document using liblibreoffice/LibreOfficeKit
  *
- * Copyright (C) 2014 Olly Betts
+ * Copyright (C) 2014,2015 Olly Betts
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,6 +39,29 @@ usage()
     cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
     cerr << "Known OPTIONS include: SkipImages\n";
     cerr << flush;
+}
+
+static const char *
+get_lo_path()
+{
+    const char * lo_path = getenv("LO_PATH");
+    if (!lo_path) {
+	struct stat sb;
+#define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
+	CHECK_DIR(LO_PATH_DEBIAN);
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.4));
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.3));
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.0));
+
+	if (!lo_path) {
+	    cerr << program << ": LibreOffice install not found\n"
+		"Set LO_PATH in the environment to the 'program' directory - e.g.:\n"
+		"LO_PATH=/opt/libreoffice/program\n"
+		"export LO_PATH" << endl;
+	    _Exit(1);
+	}
+    }
+    return lo_path;
 }
 
 // Support for LibreOfficeKit which is in LO >= 4.3.0.
@@ -190,25 +213,7 @@ last_option:
 
     const char * input = argv[1];
     const char * output = argv[2];
-
-    const char * lo_path = getenv("LO_PATH");
-    if (!lo_path) {
-	struct stat sb;
-#define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
-	CHECK_DIR(LO_PATH_DEBIAN);
-	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.4));
-	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.3));
-	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.0));
-
-	if (!lo_path) {
-	    cerr << program << ": LibreOffice install not found\n"
-		"Set LO_PATH in the environment to the 'program' directory - e.g.:\n"
-		"LO_PATH=/opt/libreoffice/program\n"
-		"export LO_PATH" << endl;
-	    _Exit(1);
-	}
-    }
-
+    const char * lo_path = get_lo_path();
     int rc = convert(format, lo_path, input, output, options);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
