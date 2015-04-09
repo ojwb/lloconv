@@ -33,7 +33,7 @@ using namespace lok;
 const char * program = "<program>";
 
 // Find a LibreOffice installation to use.
-const char *
+static const char *
 get_lo_path()
 {
     const char * lo_path = getenv("LO_PATH");
@@ -54,6 +54,47 @@ get_lo_path()
 	}
     }
     return lo_path;
+}
+
+struct handle {
+    Office * llo;
+    LibLibreOffice * llo_old;
+    const char * lo_path;
+
+    handle(const char * lo_path_)
+	: llo(NULL), llo_old(NULL), lo_path(lo_path_) { }
+
+    ~handle() {
+	delete llo;
+	delete llo_old;
+    }
+};
+
+void *
+convert_init()
+{
+    handle * h = NULL;
+    try {
+	const char * lo_path = get_lo_path();
+	handle * h = new handle(lo_path);
+	if (!lok_cpp_init(lo_path, &(h->llo_old), &(h->llo))) {
+	    delete h;
+	    cerr << program << ": Failed to initialise LibreOfficeKit or LibLibreOffice" << endl;
+	    return NULL;
+	}
+	return h;
+    } catch (const exception & e) {
+	delete h;
+	cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
+	return NULL;
+    }
+}
+
+void
+convert_cleanup(void * h_void)
+{
+    handle * h = reinterpret_cast<handle *>(h_void);
+    delete h;
 }
 
 // Support for LibreOfficeKit which is in LO >= 4.3.0.
@@ -77,7 +118,6 @@ try {
     }
 
     delete lodoc;
-    delete llo;
 
     return 0;
 } catch (const exception & e) {
@@ -111,7 +151,6 @@ try {
     }
 
     delete lodoc;
-    delete llo;
 
     return 0;
 } catch (const exception & e) {
@@ -120,18 +159,15 @@ try {
 }
 
 int
-convert(const char * format, const char * lo_path,
-	const char * input, const char * output, const char * options)
+convert(void * h_void,
+	const char * input, const char * output,
+	const char * format, const char * options)
 try {
-    LibLibreOffice * llo_old;
-    Office * llo;
-    if (!lok_cpp_init(lo_path, &llo_old, &llo)) {
-	cerr << program << ": Failed to initialise LibreOfficeKit or LibLibreOffice" << endl;
-	return EX_UNAVAILABLE;
-    }
+    handle * h = reinterpret_cast<handle *>(h_void);
+    if (!h) return 1;
 
-    if (llo) {
-	return conv_lok(format, llo, input, output, options);
+    if (h->llo) {
+	return conv_lok(format, h->llo, input, output, options);
     }
 
     if (options) {
@@ -139,7 +175,7 @@ try {
 	_Exit(1);
     }
 
-    return conv_llo(format, llo_old, lo_path, input, output);
+    return conv_llo(format, h->llo_old, h->lo_path, input, output);
 } catch (const exception & e) {
     cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
     return 1;

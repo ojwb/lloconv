@@ -87,8 +87,10 @@ last_option:
 
     const char * input = argv[1];
     const char * output = argv[2];
-    const char * lo_path = get_lo_path();
-    int rc = convert(format, lo_path, input, output, options);
+
+    void * handle = convert_init();
+    int rc = convert(handle, input, output, format, options);
+    convert_cleanup(handle);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
     _Exit(rc);

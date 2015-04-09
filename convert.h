@@ -11,8 +11,11 @@
 #define INCLUDED_CONVERT_H
 
 extern const char * program;
-const char * get_lo_path();
-int convert(const char * format, const char * lo_path,
-	    const char * input, const char * output, const char * options);
+
+void * convert_init();
+int convert(void * h_void,
+	    const char * input, const char * output,
+	    const char * format, const char * options);
+void convert_cleanup(void * h_void);
 
 #endif
