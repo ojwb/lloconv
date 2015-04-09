@@ -15,7 +15,7 @@ extern const char * program;
 void * convert_init();
 int convert(void * h_void,
 	    const char * input, const char * output,
-	    const char * format, const char * options);
+	    const char * format = 0, const char * options = 0);
 void convert_cleanup(void * h_void);
 
 #endif
