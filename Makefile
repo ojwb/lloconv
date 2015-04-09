@@ -24,4 +24,4 @@ shim.o: shim.c
 	$(CC) -I. -DLINUX -c -W -Wall -O2 -g shim.c -o shim.o
 
 clean:
-	rm -f convert *.o
+	rm -f lloconv inject-meta *.o
