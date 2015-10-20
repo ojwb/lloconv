@@ -41,9 +41,9 @@ get_lo_path()
 	struct stat sb;
 #define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
 	CHECK_DIR(LO_PATH_DEBIAN);
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.0));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.4));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(4.3));
-	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.0));
 
 	if (!lo_path) {
 	    cerr << program << ": LibreOffice install not found\n"
