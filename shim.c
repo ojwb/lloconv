@@ -28,7 +28,7 @@
 
 // If LO is built with --enable-mergelibs then we want to look in this library
 // instead.  This is the case on Ubuntu.
-#define TARGET_LIB2 "lib" "libmergedlo" ".so"
+#define TARGET_LIB2 "lib" "mergedlo" ".so"
 
 #define TARGET_LIB_MAX_LEN \
     (sizeof(TARGET_LIB) > sizeof(TARGET_LIB2) ? \
