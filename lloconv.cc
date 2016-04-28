@@ -1,6 +1,6 @@
 /* lloconv.cc - Convert a document using liblibreoffice/LibreOfficeKit
  *
- * Copyright (C) 2014,2015 Olly Betts
+ * Copyright (C) 2014,2015,2016 Olly Betts
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,13 +13,15 @@
 #include <sysexits.h>
 
 #include "convert.h"
+#include "urlencode.h"
 
 using namespace std;
 
 static void
 usage()
 {
-    cerr << "Usage: " << program << " [-f OUTPUT_FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
+    cerr << "Usage: " << program << " [-u] [-f OUTPUT_FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
+    cerr << "  -u  INPUT_FILE is a URL\n";
     cerr << "Specifying options requires LibreOffice >= 4.3.0rc1\n\n";
     cerr << "Known values for OUTPUT_FORMAT include:\n";
     cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
@@ -39,6 +41,7 @@ main(int argc, char **argv)
 
     const char * format = NULL;
     const char * options = NULL;
+    bool url = false;
     // FIXME: Use getopt() or something.
     while (argv[1][0] == '-') {
 	switch (argv[1][1]) {
@@ -72,6 +75,14 @@ main(int argc, char **argv)
 		    argc -= 2;
 		}
 		continue;
+	    case 'u':
+		if (argv[1][2] != '\0') {
+		    break;
+		}
+		url = true;
+		++argv;
+		--argc;
+		continue;
 	}
 
 	cerr << "Option '" << argv[1] << "' unknown\n\n";
@@ -85,11 +96,17 @@ last_option:
 	_Exit(EX_USAGE);
     }
 
-    const char * input = argv[1];
-    const char * output = argv[2];
+    string input;
+    if (url) {
+	input = argv[1];
+    } else {
+	url_encode(input, argv[1]);
+    }
+    string output;
+    url_encode(output, argv[2]);
 
     void * handle = convert_init();
-    int rc = convert(handle, input, output, format, options);
+    int rc = convert(handle, input.c_str(), output.c_str(), format, options);
     convert_cleanup(handle);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
