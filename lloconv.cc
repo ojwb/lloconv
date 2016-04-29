@@ -43,10 +43,12 @@ main(int argc, char **argv)
     const char * options = NULL;
     bool url = false;
     // FIXME: Use getopt() or something.
-    while (argv[1][0] == '-') {
-	switch (argv[1][1]) {
+    ++argv;
+    --argc;
+    while (argv[0] && argv[0][0] == '-') {
+	switch (argv[0][1]) {
 	    case '-':
-		if (argv[1][2] == '\0') {
+		if (argv[0][2] == '\0') {
 		    // End of options.
 		    ++argv;
 		    --argc;
@@ -54,29 +56,29 @@ main(int argc, char **argv)
 		}
 		break;
 	    case 'f':
-		if (argv[1][2]) {
-		    format = argv[1] + 2;
+		if (argv[0][2]) {
+		    format = argv[0] + 2;
 		    ++argv;
 		    --argc;
 		} else {
-		    format = argv[2];
+		    format = argv[1];
 		    argv += 2;
 		    argc -= 2;
 		}
 		continue;
 	    case 'o':
-		if (argv[1][2]) {
-		    options = argv[1] + 2;
+		if (argv[0][2]) {
+		    options = argv[0] + 2;
 		    ++argv;
 		    --argc;
 		} else {
-		    options = argv[2];
+		    options = argv[1];
 		    argv += 2;
 		    argc -= 2;
 		}
 		continue;
 	    case 'u':
-		if (argv[1][2] != '\0') {
+		if (argv[0][2] != '\0') {
 		    break;
 		}
 		url = true;
@@ -85,25 +87,25 @@ main(int argc, char **argv)
 		continue;
 	}
 
-	cerr << "Option '" << argv[1] << "' unknown\n\n";
-	argc = 0;
+	cerr << "Option '" << argv[0] << "' unknown\n\n";
+	argc = -1;
 	break;
     }
 last_option:
 
-    if (argc != 3) {
+    if (argc != 2) {
 	usage();
 	_Exit(EX_USAGE);
     }
 
     string input;
     if (url) {
-	input = argv[1];
+	input = argv[0];
     } else {
-	url_encode(input, argv[1]);
+	url_encode(input, argv[0]);
     }
     string output;
-    url_encode(output, argv[2]);
+    url_encode(output, argv[1]);
 
     void * handle = convert_init();
     int rc = convert(handle, input.c_str(), output.c_str(), format, options);
