@@ -102,10 +102,10 @@ last_option:
     if (url) {
 	input = argv[0];
     } else {
-	url_encode(input, argv[0]);
+	url_encode_path(input, argv[0]);
     }
     string output;
-    url_encode(output, argv[1]);
+    url_encode_path(output, argv[1]);
 
     void * handle = convert_init();
     if (!handle) {
