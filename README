@@ -11,6 +11,14 @@ convert to is determined by the extension of the output filename.  E.g.:
 
 $ ./lloconv essay.odt essay.html
 
+You can also fetch a document from a URL to convert:
+
+$ ./lloconv -u https://example.org/sample.doc sample.html
+
+Use this feature with caution - it's probably safe on https URLs you control
+the content of, but fetching arbitrary documents is equivalent to automatically
+opening email attachments.
+
 The code checks for LibreOffice installed in /usr/lib/libreoffice/program
 (which is where the Debian packages install to) and if it's not there, tries
 /opt/libreoffice<major>.<minor>/program for known <major>.<minor> versions
