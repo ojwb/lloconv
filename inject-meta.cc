@@ -127,7 +127,7 @@ last_option:
     string tmpdir(p);
 
     string odt = tmpdir + "/tmp.odt";
-    int rc = convert(handle, input, odt.c_str());
+    int rc = convert(handle, false, input, odt.c_str());
 
     if (!rc) {
 	int cwd_fd = open(".", O_RDONLY);
@@ -209,7 +209,7 @@ next:;
 	    cerr << program << ": fchdir() failed (" << strerror(errno) << ")" << endl;
 	    _Exit(1);
 	}
-	rc = convert(handle, odt.c_str(), output);
+	rc = convert(handle, false, odt.c_str(), output);
 	unlink(odt.c_str());
     }
     convert_cleanup(handle);

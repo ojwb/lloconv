@@ -85,20 +85,29 @@ convert_cleanup(void * h_void)
 }
 
 int
-convert(void * h_void,
+convert(void * h_void, bool url,
 	const char * input, const char * output,
 	const char * format, const char * options)
 try {
     if (!h_void) return 1;
     Office * llo = static_cast<Office *>(h_void);
-    Document * lodoc = llo->documentLoad(input, options);
+
+    string input_url;
+    if (url) {
+	input_url = input;
+    } else {
+	url_encode_path(input_url, input);
+    }
+    Document * lodoc = llo->documentLoad(input_url.c_str(), options);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
 	cerr << program << ": LibreOfficeKit failed to load document (" << errmsg << ")" << endl;
 	return 1;
     }
 
-    if (!lodoc->saveAs(output, format, options)) {
+    string output_url;
+    url_encode_path(output_url, output);
+    if (!lodoc->saveAs(output_url.c_str(), format, options)) {
 	const char * errmsg = llo->getError();
 	cerr << program << ": LibreOfficeKit failed to export (" << errmsg << ")" << endl;
 	delete lodoc;

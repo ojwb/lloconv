@@ -13,7 +13,6 @@
 #include <sysexits.h>
 
 #include "convert.h"
-#include "urlencode.h"
 
 using namespace std;
 
@@ -98,20 +97,14 @@ last_option:
 	_Exit(EX_USAGE);
     }
 
-    string input;
-    if (url) {
-	input = argv[0];
-    } else {
-	url_encode_path(input, argv[0]);
-    }
-    string output;
-    url_encode_path(output, argv[1]);
+    const char * input = argv[0];
+    const char * output = argv[1];
 
     void * handle = convert_init();
     if (!handle) {
 	_Exit(EX_UNAVAILABLE);
     }
-    int rc = convert(handle, input.c_str(), output.c_str(), format, options);
+    int rc = convert(handle, url, input, output, format, options);
     convert_cleanup(handle);
 
     // Avoid segfault from LibreOffice by terminating swiftly.
