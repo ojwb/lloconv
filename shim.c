@@ -34,10 +34,9 @@
     (sizeof(TARGET_LIB) > sizeof(TARGET_LIB2) ? \
          sizeof(TARGET_LIB) : sizeof(TARGET_LIB2))
 
-typedef LibreOffice *(HookFunction_old)(void);
 typedef LibreOfficeKit *(HookFunction)(const char*);
 
-int lok_init( const char *install_path, LibreOffice** llo, LibreOfficeKit** lok )
+int lok_init( const char *install_path, LibreOfficeKit** lok )
 {
     char *imp_lib;
     void *dlhandle;
@@ -73,22 +72,13 @@ int lok_init( const char *install_path, LibreOffice** llo, LibreOfficeKit** lok 
 
     pSym = (HookFunction *) dlsym( dlhandle, "libreofficekit_hook" );
     if( !pSym ) {
-        HookFunction_old *pSym_old;
-        pSym_old = (HookFunction_old *) dlsym( dlhandle, "liblibreoffice_hook" );
-        if( pSym_old ) {
-            free( imp_lib );
-            *llo = pSym_old();
-            *lok = NULL;
-            return 1;
-        }
-        fprintf( stderr, "failed to find libreofficekit_hook or liblibreoffice_hook in library '%s'\n", imp_lib );
+        fprintf( stderr, "failed to find libreofficekit_hook in library '%s'\n", imp_lib );
         dlclose( dlhandle );
         free( imp_lib );
         return 0;
     }
 
     free( imp_lib );
-    *llo = NULL;
     *lok = pSym( install_path );
     return 1;
 }

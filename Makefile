@@ -19,7 +19,6 @@ urlencode.o: urlencode.cc urlencode.h
 	$(CXX) -I. -c -W -Wall -O2 -g urlencode.cc -o urlencode.o
 
 convert.o: convert.cc convert.h \
-    liblibreoffice.h liblibreoffice.hxx \
     LibreOfficeKit.h LibreOfficeKit.hxx
 	$(CXX) -I. -c -W -Wall -O2 -g convert.cc -o convert.o
 

@@ -1,6 +1,6 @@
-/* convert.cc - Convert documents using liblibreoffice/LibreOfficeKit
+/* convert.cc - Convert documents using LibreOfficeKit
  *
- * Copyright (C) 2014,2015 Olly Betts
+ * Copyright (C) 2014,2015,2016 Olly Betts
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <sysexits.h>
 
-#include "liblibreoffice.hxx"
 #include "LibreOfficeKit.hxx"
 
 using namespace std;
@@ -57,36 +56,21 @@ get_lo_path()
     return lo_path;
 }
 
-struct handle {
-    Office * llo;
-    LibLibreOffice * llo_old;
-    const char * lo_path;
-
-    handle(const char * lo_path_)
-	: llo(NULL), llo_old(NULL), lo_path(lo_path_) { }
-
-    ~handle() {
-	delete llo;
-	delete llo_old;
-    }
-};
-
 void *
 convert_init()
 {
-    handle * h = NULL;
+    Office * llo = NULL;
     try {
 	const char * lo_path = get_lo_path();
-	handle * h = new handle(lo_path);
-	if (!lok_cpp_init(lo_path, &(h->llo_old), &(h->llo))) {
-	    delete h;
-	    cerr << program << ": Failed to initialise LibreOfficeKit or LibLibreOffice" << endl;
+	if (!lok_cpp_init(lo_path, &llo)) {
+	    delete llo;
+	    cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
 	    return NULL;
 	}
-	return h;
+	return static_cast<void*>(llo);
     } catch (const exception & e) {
-	delete h;
-	cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
+	delete llo;
+	cerr << program << ": LibreOfficeKit threw exception (" << e.what() << ")" << endl;
 	return NULL;
     }
 }
@@ -94,15 +78,17 @@ convert_init()
 void
 convert_cleanup(void * h_void)
 {
-    handle * h = reinterpret_cast<handle *>(h_void);
-    delete h;
+    Office * llo = static_cast<Office *>(h_void);
+    delete llo;
 }
 
-// Support for LibreOfficeKit which is in LO >= 4.3.0.
-static int
-conv_lok(const char * format, Office * llo,
-	 const char * input, const char * output, const char * options)
+int
+convert(void * h_void,
+	const char * input, const char * output,
+	const char * format, const char * options)
 try {
+    if (!h_void) return 1;
+    Office * llo = static_cast<Office *>(h_void);
     Document * lodoc = llo->documentLoad(input, options);
     if (!lodoc) {
 	const char * errmsg = llo->getError();
@@ -114,7 +100,6 @@ try {
 	const char * errmsg = llo->getError();
 	cerr << program << ": LibreOfficeKit failed to export (" << errmsg << ")" << endl;
 	delete lodoc;
-	delete llo;
 	return 1;
     }
 
@@ -123,61 +108,5 @@ try {
     return 0;
 } catch (const exception & e) {
     cerr << program << ": LibreOfficeKit threw exception (" << e.what() << ")" << endl;
-    return 1;
-}
-
-// Support for the old liblibreoffice code in LO 4.2.x.
-static int
-conv_llo(const char * format, LibLibreOffice * llo, const char * lo_path,
-	 const char * input, const char * output)
-try {
-    if (!llo->initialize(lo_path)) {
-	cerr << program << ": Failed to initialise liblibreoffice" << endl;
-	return EX_UNAVAILABLE;
-    }
-
-    LODocument * lodoc = llo->documentLoad(input);
-    if (!lodoc) {
-	const char * errmsg = llo->getError();
-	cerr << program << ": liblibreoffice failed to load document (" << errmsg << ")" << endl;
-	return 1;
-    }
-
-    if (!lodoc->saveAs(output, format)) {
-	const char * errmsg = llo->getError();
-	cerr << program << ": liblibreoffice failed to export (" << errmsg << ")" << endl;
-	delete lodoc;
-	delete llo;
-	return 1;
-    }
-
-    delete lodoc;
-
-    return 0;
-} catch (const exception & e) {
-    cerr << program << ": liblibreoffice threw exception (" << e.what() << ")" << endl;
-    return 1;
-}
-
-int
-convert(void * h_void,
-	const char * input, const char * output,
-	const char * format, const char * options)
-try {
-    handle * h = reinterpret_cast<handle *>(h_void);
-    if (!h) return 1;
-
-    if (h->llo) {
-	return conv_lok(format, h->llo, input, output, options);
-    }
-
-    if (options) {
-	cerr << program << ": LibreOffice >= 4.3.0rc1 required for specifying options" << endl;
-	_Exit(1);
-    }
-
-    return conv_llo(format, h->llo_old, h->lo_path, input, output);
-} catch (const exception & e) {
-    cerr << program << ": LibreOffice threw exception (" << e.what() << ")" << endl;
     return 1;
 }
