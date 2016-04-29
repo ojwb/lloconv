@@ -18,7 +18,9 @@
 #include <unistd.h>
 #include <sysexits.h>
 
-#include "LibreOfficeKit.hxx"
+#include <LibreOfficeKit/LibreOfficeKit.hxx>
+
+#include "urlencode.h"
 
 using namespace std;
 using namespace lok;
@@ -62,8 +64,8 @@ convert_init()
     Office * llo = NULL;
     try {
 	const char * lo_path = get_lo_path();
-	if (!lok_cpp_init(lo_path, &llo)) {
-	    delete llo;
+	llo = lok_cpp_init(lo_path);
+	if (!llo) {
 	    cerr << program << ": Failed to initialise LibreOfficeKit" << endl;
 	    return NULL;
 	}
