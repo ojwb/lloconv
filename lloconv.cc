@@ -108,6 +108,9 @@ last_option:
     url_encode(output, argv[1]);
 
     void * handle = convert_init();
+    if (!handle) {
+	_Exit(EX_UNAVAILABLE);
+    }
     int rc = convert(handle, input.c_str(), output.c_str(), format, options);
     convert_cleanup(handle);
 
