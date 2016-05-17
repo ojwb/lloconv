@@ -22,10 +22,6 @@ urlencode.o: urlencode.cc \
 	$(CXX) -I. -c -W -Wall -O2 -g urlencode.cc -o urlencode.o
 
 convert.o: convert.cc \
-    LibreOfficeKit/LibreOfficeKit.h \
-    LibreOfficeKit/LibreOfficeKit.hxx \
-    LibreOfficeKit/LibreOfficeKitInit.h \
-    LibreOfficeKit/LibreOfficeKitTypes.h \
     convert.h \
     urlencode.h
 	$(CXX) -I. -c -W -Wall -O2 -g convert.cc -o convert.o
