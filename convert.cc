@@ -42,6 +42,7 @@ get_lo_path()
 	struct stat sb;
 #define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
 	CHECK_DIR(LO_PATH_DEBIAN);
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.4));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.3));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.2));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.1));
