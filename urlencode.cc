@@ -30,19 +30,17 @@
 
 using namespace std;
 
-void
-url_encode_(string & res, const char * p, size_t len, const char * safe)
-{
-    while (len--) {
-	unsigned char ch = *p++;
-	if (isalnum(ch) || strchr(safe, ch)) {
-	    // Unreserved by RFC3986.
-	    res += ch;
-	} else {
-	    // RFC3986 says we "should" encode as upper case hex digits.
-	    res += '%';
-	    res += "0123456789ABCDEF"[ch >> 4];
-	    res += "0123456789ABCDEF"[ch & 0x0f];
-	}
+void url_encode_(string &res, const char *p, size_t len, const char *safe) {
+  while (len--) {
+    unsigned char ch = *p++;
+    if (isalnum(ch) || strchr(safe, ch)) {
+      // Unreserved by RFC3986.
+      res += ch;
+    } else {
+      // RFC3986 says we "should" encode as upper case hex digits.
+      res += '%';
+      res += "0123456789ABCDEF"[ch >> 4];
+      res += "0123456789ABCDEF"[ch & 0x0f];
     }
+  }
 }

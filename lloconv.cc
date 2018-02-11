@@ -16,97 +16,94 @@
 
 using namespace std;
 
-static void
-usage()
-{
-    cerr << "Usage: " << program << " [-u] [-f OUTPUT_FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
-    cerr << "  -u  INPUT_FILE is a URL\n";
-    cerr << "Specifying options requires LibreOffice >= 4.3.0rc1\n\n";
-    cerr << "Known values for OUTPUT_FORMAT include:\n";
-    cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
-    cerr << "Known OPTIONS include: SkipImages\n";
-    cerr << flush;
+static void usage() {
+  cerr << "Usage: " << program
+       << " [-u] [-f OUTPUT_FORMAT] [-o OPTIONS] INPUT_FILE OUTPUT_FILE\n\n";
+  cerr << "  -u  INPUT_FILE is a URL\n";
+  cerr << "Specifying options requires LibreOffice >= 4.3.0rc1\n\n";
+  cerr << "Known values for OUTPUT_FORMAT include:\n";
+  cerr << "  For text documents: doc docx fodt html odt ott pdf txt xhtml\n\n";
+  cerr << "Known OPTIONS include: SkipImages\n";
+  cerr << flush;
 }
 
-int
-main(int argc, char **argv)
-{
-    program = argv[0];
+int main(int argc, char **argv) {
+  program = argv[0];
 
-    if (argc < 3) {
-	usage();
-	_Exit(EX_USAGE);
+  if (argc < 3) {
+    usage();
+    _Exit(EX_USAGE);
+  }
+
+  const char *format = NULL;
+  const char *options = NULL;
+  bool url = false;
+  // FIXME: Use getopt() or something.
+  ++argv;
+  --argc;
+  while (argv[0] && argv[0][0] == '-') {
+    switch (argv[0][1]) {
+    case '-':
+      if (argv[0][2] == '\0') {
+        // End of options.
+        ++argv;
+        --argc;
+        goto last_option;
+      }
+      break;
+    case 'f':
+      if (argv[0][2]) {
+        format = argv[0] + 2;
+        ++argv;
+        --argc;
+      } else {
+        format = argv[1];
+        argv += 2;
+        argc -= 2;
+      }
+      continue;
+    case 'o':
+      if (argv[0][2]) {
+        options = argv[0] + 2;
+        ++argv;
+        --argc;
+      } else {
+        options = argv[1];
+        argv += 2;
+        argc -= 2;
+      }
+      continue;
+    case 'u':
+      if (argv[0][2] != '\0') {
+        break;
+      }
+      url = true;
+      ++argv;
+      --argc;
+      continue;
     }
 
-    const char * format = NULL;
-    const char * options = NULL;
-    bool url = false;
-    // FIXME: Use getopt() or something.
-    ++argv;
-    --argc;
-    while (argv[0] && argv[0][0] == '-') {
-	switch (argv[0][1]) {
-	    case '-':
-		if (argv[0][2] == '\0') {
-		    // End of options.
-		    ++argv;
-		    --argc;
-		    goto last_option;
-		}
-		break;
-	    case 'f':
-		if (argv[0][2]) {
-		    format = argv[0] + 2;
-		    ++argv;
-		    --argc;
-		} else {
-		    format = argv[1];
-		    argv += 2;
-		    argc -= 2;
-		}
-		continue;
-	    case 'o':
-		if (argv[0][2]) {
-		    options = argv[0] + 2;
-		    ++argv;
-		    --argc;
-		} else {
-		    options = argv[1];
-		    argv += 2;
-		    argc -= 2;
-		}
-		continue;
-	    case 'u':
-		if (argv[0][2] != '\0') {
-		    break;
-		}
-		url = true;
-		++argv;
-		--argc;
-		continue;
-	}
-
-	cerr << "Option '" << argv[0] << "' unknown\n\n";
-	argc = -1;
-	break;
-    }
+    cerr << "Option '" << argv[0] << "' unknown\n\n";
+    argc = -1;
+    break;
+  }
 last_option:
 
-    if (argc != 2) {
-	usage();
-	_Exit(EX_USAGE);
-    }
+  if (argc != 2) {
+    usage();
+    _Exit(EX_USAGE);
+  }
 
-    const char * input = argv[0];
-    const char * output = argv[1];
+  const char *input = argv[0];
+  const char *output = argv[1];
 
-    void * handle = convert_init();
-    if (!handle) {
-	_Exit(EX_UNAVAILABLE);
-    }
-    int rc = convert(handle, url, input, output, format, options);
-    convert_cleanup(handle);
+  void *handle = convert_init();
+  if (!handle) {
+    _Exit(EX_UNAVAILABLE);
+  }
+  int rc = convert(handle, url, input, output, format, options);
+  convert_cleanup(handle);
 
-    // Avoid segfault from LibreOffice by terminating swiftly.
-    _Exit(rc);
+  // Avoid segfault from LibreOffice by terminating swiftly.
+  _Exit(rc);
 }

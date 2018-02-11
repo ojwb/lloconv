@@ -28,34 +28,24 @@
 #include <cstring>
 #include <string>
 
-void url_encode_(std::string & res,
-		 const char * p, size_t len,
-		 const char * safe);
+void url_encode_(std::string &res, const char *p, size_t len, const char *safe);
 
-inline void
-url_encode(std::string & res, const std::string &str)
-{
-    url_encode_(res, str.data(), str.size(), "-._~");
+inline void url_encode(std::string &res, const std::string &str) {
+  url_encode_(res, str.data(), str.size(), "-._~");
 }
 
-inline void
-url_encode(std::string & res, const char * p)
-{
-    url_encode_(res, p, std::strlen(p), "-._~");
+inline void url_encode(std::string &res, const char *p) {
+  url_encode_(res, p, std::strlen(p), "-._~");
 }
 
 /// Append a path, url encoding the segments, but not the '/' between them.
-inline void
-url_encode_path(std::string & res, const std::string &str)
-{
-    url_encode_(res, str.data(), str.size(), "/-._~");
+inline void url_encode_path(std::string &res, const std::string &str) {
+  url_encode_(res, str.data(), str.size(), "/-._~");
 }
 
 /// Append a path, url encoding the segments, but not the '/' between them.
-inline void
-url_encode_path(std::string & res, const char * p)
-{
-    url_encode_(res, p, std::strlen(p), "/-._~");
+inline void url_encode_path(std::string &res, const char *p) {
+  url_encode_(res, p, std::strlen(p), "/-._~");
 }
 
 #endif // OMEGA_INCLUDED_URLENCODE_H
