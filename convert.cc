@@ -1,6 +1,6 @@
 /* convert.cc - Convert documents using LibreOfficeKit
  *
- * Copyright (C) 2014,2015,2016 Olly Betts
+ * Copyright (C) 2014,2015,2016,2018 Olly Betts
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,6 +42,8 @@ get_lo_path()
 	struct stat sb;
 #define CHECK_DIR(P) if (!lo_path && stat(P"/versionrc", &sb) == 0 && S_ISREG(sb.st_mode)) lo_path = P
 	CHECK_DIR(LO_PATH_DEBIAN);
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(6.1));
+	CHECK_DIR(LO_PATH_LIBREOFFICEORG(6.0));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.4));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.3));
 	CHECK_DIR(LO_PATH_LIBREOFFICEORG(5.2));
