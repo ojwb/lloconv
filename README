@@ -1,8 +1,9 @@
 lloconv
 =======
 
-This is a document convertor which uses LibreOfficeKit (formerly known as
-liblibreoffice) for all the heavy lifting.
+This is a document convertor which uses LibreOfficeKit for all the heavy
+lifting.  LibreOfficeKit was formerly known as liblibreoffice, hence the name
+"lloconv".
 
 LibreOffice 4.4 and later are fully supported.  LibreOffice 4.3 works
 provided you avoid filenames which contain characters which need
@@ -32,8 +33,15 @@ than one copy installed, e.g.:
 $ LO_PATH=/opt/libreoffice5.0/program
 $ export LO_PATH
 
-You should be aware that LibreOfficeKit is quite a new feature - if you
-hit problems, please report them.
+Failure to convert a particular file is much more likely an issue with
+LibreOffice or the file itself rather than a lloconv bug.  If you find a file
+which lloconv can't convert, before reporting a bug against lloconv please
+first check if you can convert it by opening it using the LibreOffice UI and
+selecting File->Export.  If this also fails, it's either a bad file or a
+LibreOffice bug.
+
+If you find a file which LibreOffice can convert but lloconv can't, please
+report that, ideally with an example file which reproduces the problem.
 
 If you're looked for a Python API to LibreOfficeKit, take a look at pylokit:
 https://github.com/xrmx/pylokit
