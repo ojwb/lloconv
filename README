@@ -4,7 +4,9 @@ lloconv
 This is a document convertor which uses LibreOfficeKit (formerly known as
 liblibreoffice) for all the heavy lifting.
 
-You need LibreOffice 4.3 or later for this to work.
+LibreOffice 4.4 and later are fully supported.  LibreOffice 4.3 works
+provided you avoid filenames which contain characters which need
+escaping in a URL.
 
 To use it, just run it with the input and output filenames - the format to
 convert to is determined by the extension of the output filename.  E.g.:
