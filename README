@@ -33,6 +33,24 @@ than one copy installed, e.g.:
 $ LO_PATH=/opt/libreoffice5.0/program
 $ export LO_PATH
 
+Building
+--------
+
+You need a C++ compiler, GNU make, and the LOK headers.
+
+In most cases, you can just run `make`.
+
+If you want to build against LOK headers outside /usr/include, you can specify
+LO_INCLUDE_PATH like so:
+
+make LO_INCLUDE_PATH="$HOME/git/libreoffice/master/include"
+
+This allows building on a system where $HOME/git/libreoffice/master is a
+git checkout and /usr/include has no LOK headers.
+
+Bugs
+----
+
 Failure to convert a particular file is much more likely an issue with
 LibreOffice or the file itself rather than a lloconv bug.  If you find a file
 which lloconv can't convert, before reporting a bug against lloconv please
@@ -41,7 +59,8 @@ selecting File->Export.  If this also fails, it's either a bad file or a
 LibreOffice bug.
 
 If you find a file which LibreOffice can convert but lloconv can't, please
-report that, ideally with an example file which reproduces the problem.
+report that at https://gitlab.com/ojwb/lloconv, ideally with an example file
+which reproduces the problem.
 
 If you're looked for a Python API to LibreOfficeKit, take a look at pylokit:
 https://github.com/xrmx/pylokit
